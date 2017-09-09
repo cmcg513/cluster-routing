@@ -7,17 +7,11 @@ for each route and for a master list
 """
 
 import utm
-import math
 import csv
-import time
-from geopy.geocoders import GoogleV3, Nominatim
+from geopy.geocoders import GoogleV3
 import numpy as np
-import random
-import matplotlib.pyplot as plt
-import matplotlib.colors as matcol
 from motionless import DecoratedMap, AddressMarker
 from bs4 import BeautifulSoup
-import copy
 import sys
 import kmeans
 
