@@ -1,3 +1,7 @@
+"""
+Author: Casey McGinley
+"""
+
 from difflib import SequenceMatcher
 import csv
 import string
