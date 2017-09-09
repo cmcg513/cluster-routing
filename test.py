@@ -28,10 +28,6 @@ def main():
 
     # cluster our data
     centers, clusters, _ = kmeans.find_centers(X,7)
-    print centers
-    print clusters.keys()
-    print clusters
-    print _
 
     # select a random subset of colors
     all_colors = list(matcol.cnames.keys()) #150 colors
