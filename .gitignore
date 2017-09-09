@@ -5,3 +5,4 @@
 *.csv
 *.zip
 test/test
+*.pyc
