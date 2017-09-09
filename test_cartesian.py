@@ -1,3 +1,9 @@
+"""
+Author: Casey McGinley
+
+Script testing out the Google Maps API
+"""
+
 import utm
 import math
 import csv
