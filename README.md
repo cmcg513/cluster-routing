@@ -1,4 +1,4 @@
-# Routing deliveried using k-means
+# Routing deliveries using k-means
 This collection of scripts was created to assist in routing meal deliveries for a local charitable event. The technique is rather naive, and essentially just utilizes k-means clustering. 
 
 HTML files of the various routes are created, with embeded static maps generated using the Google Maps API
