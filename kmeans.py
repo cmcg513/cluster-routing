@@ -25,7 +25,7 @@ def _cluster_points(X, mu):
     for x in X:
         # identify closest centroid
         # NOTE: bestmukey is the index into the list mu, not the centroid itself
-        bestmukey = min([(i[0], np.linalg.norm(x - mu[i[0]])) \
+        bestmukey = min([(i[0], np.linalg.norm(x - mu[i[0]]))
                          for i in enumerate(mu)], key=lambda t: t[1])[0]
         cluster_map.append(bestmukey)
         try:
@@ -58,7 +58,7 @@ def _has_converged(mu, oldmu):
     """
     if mu is None or oldmu is None:
         return False
-    return (set([tuple(a) for a in mu]) == set([tuple(a) for a in oldmu]))
+    return set([tuple(a) for a in mu]) == set([tuple(a) for a in oldmu])
 
 
 def find_centers(X, K):
@@ -78,6 +78,10 @@ def find_centers(X, K):
     oldmu = None
     mu = random.sample(X, K)
 
+    # init clusters, cluster_map
+    clusters = None
+    cluster_map = None
+
     # iteratively improve our centroids until no improvement can be made
     while not _has_converged(mu, oldmu):
         oldmu = mu
@@ -88,4 +92,8 @@ def find_centers(X, K):
 
         # Reevaluate centers
         mu = _reevaluate_centers(clusters)
+
+    if clusters is None or cluster_map is None:
+        raise ValueError("clusters or cluster_map not initted as dict/list")
+
     return mu, clusters, cluster_map

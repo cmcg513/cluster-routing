@@ -66,10 +66,10 @@ def read_csv(filename):
                 except:
                     j += 1
 
-            if resp == None:
+            if resp is None:
                 print("resp = None")
-                import IPython;
-                IPython.embed();
+                import IPython
+                IPython.embed()
                 sys.exit()
             addresses.append(resp.address)
 
@@ -172,6 +172,8 @@ def collect_map_urls(extra, cluster_map, clusters):
     """
     urls = []
     i = 0
+
+    # iterates over the cluster numbers
     indices = sorted(clusters.keys())
     for key in indices:
         try:
@@ -239,6 +241,8 @@ def generate_master_list(urls, total_meals, total_locs, clusters, cluster_map, r
         # iterate over the centroids/clusters
         # NOTE: mu is an index in to the list of centroids, not the centroid
         # itself
+
+        # iterates over the cluster numbers
         indices = sorted(clusters.keys())
         for mu in indices:
             print("cluster " + str(mu + 1))
@@ -276,32 +280,32 @@ def generate_master_list(urls, total_meals, total_locs, clusters, cluster_map, r
             # setup the table header
             tr_head = soup.new_tag("tr", id="tr_head" + str(mu), **{'class': "tr_head"})
             table.append(tr_head)
-            th = soup.new_tag("th");
-            th.string = "Name";
+            th = soup.new_tag("th")
+            th.string = "Name"
             tr_head.append(th)
-            th = soup.new_tag("th");
-            th.string = "Phone";
+            th = soup.new_tag("th")
+            th.string = "Phone"
             tr_head.append(th)
-            th = soup.new_tag("th");
-            th.string = "Town";
+            th = soup.new_tag("th")
+            th.string = "Town"
             tr_head.append(th)
-            th = soup.new_tag("th");
-            th.string = "Zip";
+            th = soup.new_tag("th")
+            th.string = "Zip"
             tr_head.append(th)
-            th = soup.new_tag("th");
-            th.string = "Street Address";
+            th = soup.new_tag("th")
+            th.string = "Street Address"
             tr_head.append(th)
-            th = soup.new_tag("th");
-            th.string = "Apt/Bldg #";
+            th = soup.new_tag("th")
+            th.string = "Apt/Bldg #"
             tr_head.append(th)
-            th = soup.new_tag("th");
-            th.string = "Meals";
+            th = soup.new_tag("th")
+            th.string = "Meals"
             tr_head.append(th)
-            th = soup.new_tag("th");
-            th.string = "Special Intructions";
+            th = soup.new_tag("th")
+            th.string = "Special Intructions"
             tr_head.append(th)
-            th = soup.new_tag("th");
-            th.string = "Agency";
+            th = soup.new_tag("th")
+            th.string = "Agency"
             tr_head.append(th)
 
             # initialize a count for the total number of meals
@@ -359,9 +363,8 @@ def generate_master_list(urls, total_meals, total_locs, clusters, cluster_map, r
                 r_data_div.append(BeautifulSoup(img_div.prettify(), 'html.parser'))
             except:
                 print("copy error")
-                import IPython;
-                IPython.embed();
-                sys.exit()
+                import IPython
+                IPython.embed()
                 sys.exit()
 
             # write the individual route files
