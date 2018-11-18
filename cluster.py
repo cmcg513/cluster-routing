@@ -18,8 +18,9 @@ import logging
 
 from local_settings import GEOCODE_API_KEY, CLUSTER_NUM
 
-logging.basicConfig(filename='test.log',format="[%(asctime)s][%(levelname)s] %(message)s")
+logging.basicConfig(filename='test.log', format="[%(asctime)s][%(levelname)s] %(message)s")
 LOG = logging.getLogger(__name__)
+
 
 def read_csv(filename):
     """
@@ -55,7 +56,7 @@ def read_csv(filename):
             address = row[9]
             zip_code = row[8]
             town = row[7]
-            query = " ".join([address,town,'NY',zip_code])
+            query = " ".join([address, town, 'NY', zip_code])
             j = 0
             resp = None
             while j < 10:
@@ -67,22 +68,24 @@ def read_csv(filename):
 
             if resp == None:
                 print("resp = None")
-                import IPython; IPython.embed(); sys.exit()
+                import IPython;
+                IPython.embed();
+                sys.exit()
             addresses.append(resp.address)
 
             # track latitude and longitude
             lat = resp.latitude
             lon = resp.longitude
-            latlong.append([lat,lon])
+            latlong.append([lat, lon])
 
             # track partial matches
             if 'partial_match' in resp.raw:
                 if resp.raw['partial_match']:
-                    partials.append((i-1,row,resp))
+                    partials.append((i - 1, row, resp))
 
             # translate lat/long to UTM coords
             # TODO: what are UTM coords?
-            utm_coords = utm.from_latlon(lat,lon)
+            utm_coords = utm.from_latlon(lat, lon)
             x = utm_coords[0]
             y = utm_coords[1]
             x_coords.append(x)
@@ -98,7 +101,7 @@ def read_csv(filename):
     return x_coords, y_coords, extra_data
 
 
-def cluster(filename,k):
+def cluster(filename, k):
     """
     Applies the k-means clustering to a given file
 
@@ -106,18 +109,18 @@ def cluster(filename,k):
     various supplemental data
     """
     # parse the CSV
-    x_coords,y_coords,extra = read_csv(filename)
+    x_coords, y_coords, extra = read_csv(filename)
 
     # join the X/Y coordinates into a numpy array
     data = []
     for i in range(len(x_coords)):
         x = x_coords[i]
         y = y_coords[i]
-        data.append(np.array([x,y]))
+        data.append(np.array([x, y]))
     data = np.array(data)
 
     # apply k-means clustering
-    result = list(kmeans.find_centers(data,k))
+    result = list(kmeans.find_centers(data, k))
 
     result.append(extra)
     return tuple(result)
@@ -172,7 +175,7 @@ def collect_map_urls(extra, cluster_map, clusters):
     indices = sorted(clusters.keys())
     for key in indices:
         try:
-            urls.append(generate_map_url(extra['addr'],cluster_map,key))
+            urls.append(generate_map_url(extra['addr'], cluster_map, key))
         except:
             # TODO: when are erros generated? Server side with Google Maps?
             print("Error generating map: %d" % key)
@@ -194,10 +197,10 @@ def get_totals(raw_data):
     for row in raw_data:
         count += 1
         meals += int(row[11])
-    return meals,count
+    return meals, count
 
 
-def generate_master_list(urls,total_meals,total_locs,clusters,cluster_map,raw_data):
+def generate_master_list(urls, total_meals, total_locs, clusters, cluster_map, raw_data):
     """
     Write the HTML files for individual routes and compile the HTML for the 
     master list
@@ -206,19 +209,19 @@ def generate_master_list(urls,total_meals,total_locs,clusters,cluster_map,raw_da
     """
     # map of indices in a raw CSV row to the field names they correspond to
     field_names = {
-        5:'name',
-        6:'phone',
-        7:'town',
-        8:'zip',
-        9:'street',
-        10:'apt',
-        11:'meals',
-        12:'instr'
+        5: 'name',
+        6: 'phone',
+        7: 'town',
+        8: 'zip',
+        9: 'street',
+        10: 'apt',
+        11: 'meals',
+        12: 'instr'
     }
 
-    with open("master_template.html","r") as tmp:
+    with open("master_template.html", "r") as tmp:
         # Soupify the HTML
-        soup = BeautifulSoup(tmp,'html.parser')
+        soup = BeautifulSoup(tmp, 'html.parser')
 
         # add the totals counts to their respective tags
         total_meals_tag = soup.find(id="total_meals")
@@ -238,10 +241,10 @@ def generate_master_list(urls,total_meals,total_locs,clusters,cluster_map,raw_da
         # itself
         indices = sorted(clusters.keys())
         for mu in indices:
-            print ("cluster "+str(mu+1))
+            print("cluster " + str(mu + 1))
 
             # Soupify the individual route template
-            r_tmp = open("route_template.html","r")
+            r_tmp = open("route_template.html", "r")
             r_soup = BeautifulSoup(r_tmp, 'html.parser')
             r_data_div = r_soup.find(id="data")
 
@@ -253,35 +256,53 @@ def generate_master_list(urls,total_meals,total_locs,clusters,cluster_map,raw_da
                     matching_keys.append(i)
 
             # setup a new div and table for the routing entries
-            table_div = soup.new_tag("div",id="table_div"+str(mu),**{'class':"table_div"})
+            table_div = soup.new_tag("div", id="table_div" + str(mu), **{'class': "table_div"})
             data_div.append(table_div)
-            table = soup.new_tag("table",id="table"+str(mu),**{'class':"table"})
+            table = soup.new_tag("table", id="table" + str(mu), **{'class': "table"})
             table_div.append(table)
 
             # setup the table pre-header
-            tr_prehead = soup.new_tag("tr",id="tr_prehead"+str(mu),**{'class':"tr_prehead"})
+            tr_prehead = soup.new_tag("tr", id="tr_prehead" + str(mu), **{'class': "tr_prehead"})
             table.append(tr_prehead)
-            th_prehead = soup.new_tag("th",id="th_prehead"+str(mu),**{'class':"th_prehead"})
-            th_prehead.string = "ROUTE #: " + str(mu+1)
+            th_prehead = soup.new_tag("th", id="th_prehead" + str(mu), **{'class': "th_prehead"})
+            th_prehead.string = "ROUTE #: " + str(mu + 1)
             r_title = r_soup.find(id="title_route")
             r_h1 = r_soup.find(id="h1_route")
-            r_title.append("ROUTE #: " + str(mu+1))
-            r_h1.append("ROUTE #: " + str(mu+1))
+            r_title.append("ROUTE #: " + str(mu + 1))
+            r_h1.append("ROUTE #: " + str(mu + 1))
 
             tr_prehead.append(th_prehead)
 
             # setup the table header
-            tr_head = soup.new_tag("tr",id="tr_head"+str(mu),**{'class':"tr_head"})
+            tr_head = soup.new_tag("tr", id="tr_head" + str(mu), **{'class': "tr_head"})
             table.append(tr_head)
-            th = soup.new_tag("th"); th.string = "Name"; tr_head.append(th)
-            th = soup.new_tag("th"); th.string = "Phone"; tr_head.append(th)
-            th = soup.new_tag("th"); th.string = "Town"; tr_head.append(th)
-            th = soup.new_tag("th"); th.string = "Zip"; tr_head.append(th)
-            th = soup.new_tag("th"); th.string = "Street Address"; tr_head.append(th)
-            th = soup.new_tag("th"); th.string = "Apt/Bldg #"; tr_head.append(th)
-            th = soup.new_tag("th"); th.string = "Meals"; tr_head.append(th)
-            th = soup.new_tag("th"); th.string = "Special Intructions"; tr_head.append(th)
-            th = soup.new_tag("th"); th.string = "Agency"; tr_head.append(th)
+            th = soup.new_tag("th");
+            th.string = "Name";
+            tr_head.append(th)
+            th = soup.new_tag("th");
+            th.string = "Phone";
+            tr_head.append(th)
+            th = soup.new_tag("th");
+            th.string = "Town";
+            tr_head.append(th)
+            th = soup.new_tag("th");
+            th.string = "Zip";
+            tr_head.append(th)
+            th = soup.new_tag("th");
+            th.string = "Street Address";
+            tr_head.append(th)
+            th = soup.new_tag("th");
+            th.string = "Apt/Bldg #";
+            tr_head.append(th)
+            th = soup.new_tag("th");
+            th.string = "Meals";
+            tr_head.append(th)
+            th = soup.new_tag("th");
+            th.string = "Special Intructions";
+            tr_head.append(th)
+            th = soup.new_tag("th");
+            th.string = "Agency";
+            tr_head.append(th)
 
             # initialize a count for the total number of meals
             meal_count = 0
@@ -289,17 +310,17 @@ def generate_master_list(urls,total_meals,total_locs,clusters,cluster_map,raw_da
             # create a table row for each client
             tr_list = []
             for key in matching_keys:
-                tr = soup.new_tag("tr",id="tr_data"+str(key),**{'class':"tr_data"})
-                tr_list.append((raw_data[key][9],tr))
+                tr = soup.new_tag("tr", id="tr_data" + str(key), **{'class': "tr_data"})
+                tr_list.append((raw_data[key][9], tr))
 
-                for i in range(5,13):
-                    th = soup.new_tag("th",id="th_"+field_names[i]+str(key),**{'class':"th_"+field_names[i]})
+                for i in range(5, 13):
+                    th = soup.new_tag("th", id="th_" + field_names[i] + str(key), **{'class': "th_" + field_names[i]})
                     th.string = raw_data[key][i]
                     tr.append(th)
                     if i == 11:
                         meal_count += int(raw_data[key][i])
 
-                th = soup.new_tag("th",id="th_agency"+str(key),**{'class':"th_agency"})
+                th = soup.new_tag("th", id="th_agency" + str(key), **{'class': "th_agency"})
                 th.string = raw_data[key][1]
                 tr.append(th)
 
@@ -308,41 +329,43 @@ def generate_master_list(urls,total_meals,total_locs,clusters,cluster_map,raw_da
             TOTAL_ROUTE_SANITY += len(matching_keys)
 
             # sort the table rows by street name
-            tr_list = sorted(tr_list,key=lambda x: x[0])
-            for garbage,tr in tr_list:
+            tr_list = sorted(tr_list, key=lambda x: x[0])
+            for garbage, tr in tr_list:
                 table.append(tr)
 
             # close the table
-            tr_end = soup.new_tag("tr",id="tr_total"+str(mu),**{'class':"tr_total"})
+            tr_end = soup.new_tag("tr", id="tr_total" + str(mu), **{'class': "tr_total"})
             table.append(tr_end)
 
-            th_end1 = soup.new_tag("th",id="th_total1"+str(mu),**{'class':"th_total1"})
+            th_end1 = soup.new_tag("th", id="th_total1" + str(mu), **{'class': "th_total1"})
             th_end1.string = "TOTAL MEALS: " + str(meal_count)
             tr_end.append(th_end1)
 
-            th_end2 = soup.new_tag("th",id="th_total2"+str(mu),**{'class':"th_total2"})
+            th_end2 = soup.new_tag("th", id="th_total2" + str(mu), **{'class': "th_total2"})
             th_end2.string = "TOTAL STOPS: " + str(len(matching_keys))
             tr_end.append(th_end2)
 
             # get the Google Maps URL for the static map image
             url = urls[mu]
-            img_div = soup.new_tag("div",id="img_div"+str(mu),**{'class':"img_div"})
+            img_div = soup.new_tag("div", id="img_div" + str(mu), **{'class': "img_div"})
             data_div.append(img_div)
 
-            img = soup.new_tag("img",id="img"+str(mu),src=url,**{'class':"img"})
+            img = soup.new_tag("img", id="img" + str(mu), src=url, **{'class': "img"})
             img_div.append(img)
 
             # TODO: figure out why this error check is in place...
             try:
-                r_data_div.append(BeautifulSoup(table_div.prettify(),'html.parser'))
-                r_data_div.append(BeautifulSoup(img_div.prettify(),'html.parser'))
+                r_data_div.append(BeautifulSoup(table_div.prettify(), 'html.parser'))
+                r_data_div.append(BeautifulSoup(img_div.prettify(), 'html.parser'))
             except:
                 print("copy error")
-                import IPython; IPython.embed(); sys.exit()
+                import IPython;
+                IPython.embed();
+                sys.exit()
                 sys.exit()
 
             # write the individual route files
-            indiv_file = open("route_"+str(mu+1)+".html","w")
+            indiv_file = open("route_" + str(mu + 1) + ".html", "w")
             indiv_file.write(r_soup.prettify())
             indiv_file.close()
 
@@ -363,24 +386,24 @@ def main():
     """
     # cluster data
     centers, clusters, cluster_map, extra = cluster("comb_list.csv", CLUSTER_NUM)
-    
+
     # collect the URLs for the Google Maps images
-    urls = collect_map_urls(extra,cluster_map,clusters)
+    urls = collect_map_urls(extra, cluster_map, clusters)
 
     # get counts for the number of meals and the number of stops
     total_meals, total_locs = get_totals(extra['raw'])
 
     # Generate HTML for routes
-    html = generate_master_list(urls,total_meals,total_locs,clusters,cluster_map,extra['raw'])
-    f = open("master.html","w")
+    html = generate_master_list(urls, total_meals, total_locs, clusters, cluster_map, extra['raw'])
+    f = open("master.html", "w")
     f.write(html)
     f.close()
 
     # write the list of addresses that could only be partially mapped to a
     # legitimate Google maps address
-    f = open("partials.txt","w")
+    f = open("partials.txt", "w")
     for line in extra['partials']:
-        f.write(str(line)+"\n")
+        f.write(str(line) + "\n")
     f.close()
 
 

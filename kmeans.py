@@ -19,14 +19,14 @@ def _cluster_points(X, mu):
     Returns a dictionary mapping centroids to lists of points
     """
     cluster_map = []
-    clusters  = {}
+    clusters = {}
 
     # iterate over points
     for x in X:
         # identify closest centroid
         # NOTE: bestmukey is the index into the list mu, not the centroid itself
-        bestmukey = min([(i[0], np.linalg.norm(x-mu[i[0]])) \
-                    for i in enumerate(mu)], key=lambda t:t[1])[0]
+        bestmukey = min([(i[0], np.linalg.norm(x - mu[i[0]])) \
+                         for i in enumerate(mu)], key=lambda t: t[1])[0]
         cluster_map.append(bestmukey)
         try:
             clusters[bestmukey].append(x)
@@ -45,9 +45,9 @@ def _reevaluate_centers(clusters):
     keys = sorted(clusters.keys())
     for k in keys:
         # calculate a new centroid
-        newmu.append(np.mean(clusters[k], axis = 0))
+        newmu.append(np.mean(clusters[k], axis=0))
     return newmu
- 
+
 
 def _has_converged(mu, oldmu):
     """
@@ -59,7 +59,7 @@ def _has_converged(mu, oldmu):
     if mu is None or oldmu is None:
         return False
     return (set([tuple(a) for a in mu]) == set([tuple(a) for a in oldmu]))
- 
+
 
 def find_centers(X, K):
     """
@@ -69,7 +69,7 @@ def find_centers(X, K):
     """
     # convert to list of lists (e.g. if X is a numpy array)
     X = list(X)
-    for i in range(len(X)): 
+    for i in range(len(X)):
         x = X[i]
         x = list(x)
         X[i] = x
@@ -83,7 +83,7 @@ def find_centers(X, K):
         oldmu = mu
 
         # Assign all points in X to clusters
-        X = np.array(X) # convert back to numpy array
+        X = np.array(X)  # convert back to numpy array
         clusters, cluster_map = _cluster_points(X, mu)
 
         # Reevaluate centers
