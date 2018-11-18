@@ -14,7 +14,12 @@ from motionless import DecoratedMap, AddressMarker
 from bs4 import BeautifulSoup
 import sys
 import kmeans
+import logging
 
+from local_settings import GEOCODE_API_KEY, CLUSTER_NUM
+
+logging.basicConfig(filename='test.log',format="[%(asctime)s][%(levelname)s] %(message)s")
+LOG = logging.getLogger(__name__)
 
 def read_csv(filename):
     """
@@ -23,16 +28,16 @@ def read_csv(filename):
 
     Returns UTM coordinates and supplementary data
     """
-    geocoder = GoogleV3(api_key = "<scrubbed>")
+    geocoder = GoogleV3(api_key=GEOCODE_API_KEY)
     raw_data = []
     addresses = []
     latlong = []
     partials = []
     x_coords = []
     y_coords = []
-    with open(filename,'r') as raw_file:
+    with open(filename, 'r') as raw_file:
         i = 0
-        reader = csv.reader(raw_file,delimiter=",", quotechar="\"")
+        reader = csv.reader(raw_file, delimiter=",", quotechar="\"")
         for row in reader:
             # skip header row
             if i == 0:
@@ -51,9 +56,18 @@ def read_csv(filename):
             zip_code = row[8]
             town = row[7]
             query = " ".join([address,town,'NY',zip_code])
-            resp = geocoder.geocode(query,timeout=5)
+            j = 0
+            resp = None
+            while j < 10:
+                try:
+                    resp = geocoder.geocode(query, timeout=5)
+                    break
+                except:
+                    j += 1
+
             if resp == None:
-                import IPython; IPython.embed()
+                print("resp = None")
+                import IPython; IPython.embed(); sys.exit()
             addresses.append(resp.address)
 
             # track latitude and longitude
@@ -148,19 +162,24 @@ def generate_map_url(addresses, cluster_map, cluster_num):
     return dmap.generate_url()
 
 
-def collect_map_urls(extra,cluster_map,clusters):
+def collect_map_urls(extra, cluster_map, clusters):
     """
     Iterates over each cluster and gathers the necessary Google Maps URL for
     a static map image
     """
     urls = []
-    for key in clusters:
+    i = 0
+    indices = sorted(clusters.keys())
+    for key in indices:
         try:
             urls.append(generate_map_url(extra['addr'],cluster_map,key))
         except:
             # TODO: when are erros generated? Server side with Google Maps?
-            import IPython; IPython.embed()
-            sys.exit()
+            print("Error generating map: %d" % key)
+            LOG.warning("Error generating map: key: %d i: %d" % (key, i))
+            urls.append("")
+        i += 1
+
     return urls
 
 
@@ -217,7 +236,8 @@ def generate_master_list(urls,total_meals,total_locs,clusters,cluster_map,raw_da
         # iterate over the centroids/clusters
         # NOTE: mu is an index in to the list of centroids, not the centroid
         # itself
-        for mu in clusters:
+        indices = sorted(clusters.keys())
+        for mu in indices:
             print ("cluster "+str(mu+1))
 
             # Soupify the individual route template
@@ -318,7 +338,7 @@ def generate_master_list(urls,total_meals,total_locs,clusters,cluster_map,raw_da
                 r_data_div.append(BeautifulSoup(img_div.prettify(),'html.parser'))
             except:
                 print("copy error")
-                import IPython; IPython.embed()
+                import IPython; IPython.embed(); sys.exit()
                 sys.exit()
 
             # write the individual route files
@@ -342,7 +362,7 @@ def main():
     Main routine
     """
     # cluster data
-    centers, clusters, cluster_map, extra = cluster("comb_list.csv",120)
+    centers, clusters, cluster_map, extra = cluster("comb_list.csv", CLUSTER_NUM)
     
     # collect the URLs for the Google Maps images
     urls = collect_map_urls(extra,cluster_map,clusters)
