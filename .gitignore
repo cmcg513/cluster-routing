@@ -1,4 +1,3 @@
-*.txt
 *.key
 *.html
 *.pdf
@@ -7,3 +6,4 @@
 test/test
 *.pyc
 .ignore/
+local_settings.py
